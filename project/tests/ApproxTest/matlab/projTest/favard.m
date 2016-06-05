@@ -1,0 +1,23 @@
+function [ orthpol ] = favard(N, alpha, beta)
+
+  ab = r_jacobi(N,alpha,beta);
+  
+  orthpol = zeros(N);
+  orthpol(1,end) = 1;
+  convRes = conv([1 ab(1,1)], orthpol(1,:));
+  orthpol(2,:) = convRes(2:N+1);
+  
+
+  for i = 3:N
+    convRes = conv([1 ab(i-1,1)], orthpol(i-1,:)) - [0 ab(i-1,2)*orthpol(i-2,:)];
+    orthpol(i,:) = convRes(2:N+1);
+  end
+  
+  %normalizing the rows:
+  omega = @(x) (1-x).^alpha .* (1+x).^beta;
+  for i = 1:N
+     normFun = @(x) omega(x).*polyval(orthpol(i,:),x).^2;
+     orthpol(i,:) = orthpol(i,:)/sqrt(integral(normFun,-1,1));      
+  end
+  
+end
